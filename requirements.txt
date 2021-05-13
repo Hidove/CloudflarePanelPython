@@ -15,7 +15,7 @@ jsonlines==1.2.0
 passlib==1.7.2
 pyasn1==0.4.8
 pycparser==2.20
-pydantic==1.5.1
+pydantic==1.6.2
 python-jose==3.1.0
 python-multipart==0.0.5
 PyYAML==5.3.1
