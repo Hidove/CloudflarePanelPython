@@ -126,8 +126,9 @@ async def do_zone_delete(zone_id: str, cf: CloudFlare.CloudFlare = Depends(get_c
 
 # 新增域名
 @router.post('/do_zone_create', response_model=dict_response)
-async def do_zone_create(zone: zone, user=Depends(get_current_user)):
-    return dns.do_zone_create(setting.HOST_KEY, user.get('user_key'), zone.zone_name)
+async def do_zone_create(zone: zone, user=Depends(get_current_user),
+                         cf: CloudFlare.CloudFlare = Depends(get_current_user_cf)):
+    return dns.do_zone_create(cf, setting.HOST_KEY, user.get('user_key'), zone.zone_name)
 
 
 # 清理缓存

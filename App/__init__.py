@@ -1,5 +1,5 @@
 from fastapi.exceptions import RequestValidationError, HTTPException
-from starlette.responses import RedirectResponse, HTMLResponse
+from starlette.responses import HTMLResponse
 from starlette.staticfiles import StaticFiles
 
 from App.exception import request_validation_error_handler, http_exception_handler, hidove_exception_handler, \

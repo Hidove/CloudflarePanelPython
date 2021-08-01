@@ -7,7 +7,7 @@ from pydantic.main import BaseModel
 
 from App import HidoveException
 from App.utils.common import msg
-from App.ext import memorize_cache as cache
+from App.ext import memorize_cache as cache, clear_memorize_cache
 
 
 class Dns_record(BaseModel):
@@ -82,6 +82,7 @@ def get_zone_info(cf, zone_name: str = None, zone_id: str = None):
 
 
 # 新增记录
+@clear_memorize_cache()
 def do_dns_record_create(cf, zone_id, dns_record: Dns_record):
     if dns_record.ttl == None:
         dns_record.ttl = 1
@@ -103,6 +104,7 @@ def do_dns_record_create(cf, zone_id, dns_record: Dns_record):
 
 
 # 更新记录
+@clear_memorize_cache()
 def do_dns_record_update(cf, zone_id, dns_record_id, dns_record: Dns_record):
     data = {
         'name': dns_record.name,
@@ -122,6 +124,7 @@ def do_dns_record_update(cf, zone_id, dns_record_id, dns_record: Dns_record):
 
 
 # 删除域名记录
+@clear_memorize_cache()
 def do_dns_record_delete(cf, zone_id, dns_record_id):
     try:
         res = cf.zones.dns_records.delete(zone_id, dns_record_id)
@@ -132,6 +135,7 @@ def do_dns_record_delete(cf, zone_id, dns_record_id):
 
 
 # 删除域名
+@clear_memorize_cache()
 def do_zone_delete(cf, zone_id):
     try:
         res = cf.zones.delete(zone_id)
@@ -142,7 +146,8 @@ def do_zone_delete(cf, zone_id):
 
 
 # 添加域名
-def do_zone_create(host_key: str, user_key: str, zone_name: str):
+@clear_memorize_cache()
+def do_zone_create(cf,host_key: str, user_key: str, zone_name: str):
     try:
         requests_post = requests.post(
             'https://api.cloudflare.com/host-gw.html',
@@ -163,6 +168,7 @@ def do_zone_create(host_key: str, user_key: str, zone_name: str):
 
 
 # 清理缓存 (全系通用)
+@clear_memorize_cache()
 def do_cache_purge(cf, zone_id, params):
     try:
         if (params.files != []):
@@ -176,7 +182,6 @@ def do_cache_purge(cf, zone_id, params):
         else:
             raise HidoveException(status_code=400,
                                   message='The purge_everything and the files can\'t be empty at the same time!')
-
 
         res = cf.zones.purge_cache.post(zone_id, data=data)
 

@@ -58,19 +58,45 @@ def get_cache_driver():
     return Cache(maxsize=setting.CACHE_MAXSIZE, ttl=setting.CACHE_TTL, timer=time.time, default=None)
 
 
-# 内存缓存 根据函数__name__+位置参数+顺序参数生产 hash key值
-def memorize_cache():
-    cache = get_cache_driver()
+@lru_cache()
+def get_cache_manager():
+    return {}
 
+
+# 内存缓存 根据函数__module__+__name__+位置参数+顺序参数生产 hash key值
+def memorize_cache():
     def decorator(func):
         @functools.wraps(func)
         def wrap(*args, **kw):
-            cache_key = func.__name__ + '#' + str(args.__str__().__hash__()) + '#' + str(kw.__str__().__hash__())
+            cacheman = get_cache_manager()
+            user_email = args[0]._base.email
+            if user_email not in cacheman:
+                cacheman[user_email] = get_cache_driver()
+            cache = cacheman[user_email]
+            cache_key = f"{func.__module__}#{func.__name__}#{str(args.__str__().__hash__())}#{str(kw.__str__().__hash__())}"
             data = cache.get(cache_key)
             if data:
                 return data
             data = func(*args, **kw)
             cache.set(cache_key, data)
+            return data
+
+        return wrap
+
+    return decorator
+
+
+# 清理指定用户的缓存
+def clear_memorize_cache():
+    def decorator(func):
+        @functools.wraps(func)
+        def wrap(*args, **kw):
+            data = func(*args, **kw)
+            cacheman = get_cache_manager()
+            user_email = args[0]._base.email
+            if user_email in cacheman:
+                cacheman[user_email].clear()
+                del cacheman[user_email]
             return data
 
         return wrap
